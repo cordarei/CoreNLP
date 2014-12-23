@@ -648,7 +648,9 @@ public class EvaluateTreebank {
         		" with constraints: " + Arrays.toString(constraints));
 
         pq.setIndependentConstraints(constraints);
+        Timing parseTimer = new Timing();
         pq.parseAndReport(sentence, pwErr);
+        pwErr.println("Parsed " + sentence.size() + " words in " + parseTimer.toSecondsString() + " seconds.");
 
         processResults(pq, goldTree, pwErr, pwOut, pwFileOut, pwStats, treePrint);
       } // for tree iterator
