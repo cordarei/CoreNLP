@@ -1196,9 +1196,12 @@ oScore[split][end][br.rightChild] = totR;
         float cur = iScore_start_end[parentState];
         boolean foundBetter;  // always set below\
         if (crossingConstraint) {
-        	if (stateIndex.get(parentState).charAt(0) != '@') {
+        	if (bg.isSynthetic(parentState)) {
         		continue;
         	}
+//        	if (stateIndex.get(parentState).charAt(0) != '@') {
+//        		continue;
+//        	}
         }
         
         if (lengthNormalization) {
