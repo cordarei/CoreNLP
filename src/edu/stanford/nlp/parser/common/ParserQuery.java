@@ -40,6 +40,7 @@ public interface ParserQuery {
   KBestViterbiParser getDependencyParser();
 
   void setConstraints(List<ParserConstraint> constraints);
+  void setIndependentConstraints(int[] constraints);
 
   boolean saidMemMessage();
 

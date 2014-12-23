@@ -173,6 +173,12 @@ public class LexicalizedParserQuery implements ParserQuery {
       pparser.setConstraints(constraints);
     }
   }
+  @Override
+  public void setIndependentConstraints(int[] constraints) {
+	  if (pparser != null) {
+		  pparser.setIndependentConstraints(constraints);
+	  }
+  }
 
   /**
    * Parse a sentence represented as a List of tokens.
@@ -263,8 +269,13 @@ public class LexicalizedParserQuery implements ParserQuery {
     }
 
     if (op.doPCFG) {
-      if (!pparser.parse(sentenceB)) {
+      if (!pparser.parse(sentenceB) && pparser.getIndependentConstraints() == null) {
         return parseSucceeded;
+      } else if (pparser.getIndependentConstraints() != null) {
+    	  pparser.setIndependentConstraints(null);
+    	  if (!pparser.parse(sentenceB)) {
+    		  return parseSucceeded;
+    	  }
       }
       if (op.testOptions.verbose) {
         pwOut.println("PParser output");

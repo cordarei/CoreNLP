@@ -40,7 +40,10 @@ import edu.stanford.nlp.trees.Treebank;
 import edu.stanford.nlp.trees.TreebankLanguagePack;
 import edu.stanford.nlp.trees.TreePrint;
 import edu.stanford.nlp.trees.TreeTransformer;
+
 import java.util.function.Function;
+
+import edu.stanford.nlp.util.CollectionUtils;
 import edu.stanford.nlp.util.Generics;
 import edu.stanford.nlp.util.ScoredObject;
 import edu.stanford.nlp.util.Timing;
@@ -639,9 +642,12 @@ public class EvaluateTreebank {
 
       for (Tree goldTree : testTreebank) {
         final List<CoreLabel> sentence = getInputSentence(goldTree);
+        int[] constraints = getIndependentConstraints(goldTree);
 
-        pwErr.println("Parsing [len. " + sentence.size() + "]: " + Sentence.listToString(sentence));
+        pwErr.println("Parsing [len. " + sentence.size() + "]: " + Sentence.listToString(sentence) +
+        		" with constraints: " + Arrays.toString(constraints));
 
+        pq.setIndependentConstraints(constraints);
         pq.parseAndReport(sentence, pwErr);
 
         processResults(pq, goldTree, pwErr, pwOut, pwFileOut, pwStats, treePrint);
@@ -729,6 +735,18 @@ public class EvaluateTreebank {
 
     return f1;
   } // end testOnTreebank()
+
+private int[] getIndependentConstraints(Tree goldTree) {
+	Tree t = goldTree.skipRoot();
+	ArrayList<Integer> constraints = new ArrayList<Integer>();
+	int total = 0;
+	for (Tree child : t.children()) {
+		total += child.yield().size();
+		constraints.add(total);
+	}
+	constraints.remove(constraints.size()-1);
+	return CollectionUtils.asIntArray(constraints);
+}
 
 
 

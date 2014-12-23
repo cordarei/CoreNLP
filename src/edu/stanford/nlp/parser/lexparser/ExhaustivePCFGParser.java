@@ -118,6 +118,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
    * saves quite a bit of time.
    */
   protected List<ParserConstraint> constraints = null;
+  protected int[] independentConstraints = null;
 
   private CoreLabel getCoreLabel(int labelIndex) {
     if (originalCoreLabels[labelIndex] != null) {
@@ -847,7 +848,19 @@ oScore[split][end][br.rightChild] = totR;
       } // for start
     } // for diff (i.e., span)
   } // end doInsideScores()
-
+  
+	private boolean isCrossingConstraint(final int start, final int end) {
+		final int[] constraints = getIndependentConstraints();
+		if (constraints == null) {
+			return false;
+		}
+		for(int i : constraints) {
+			if (i >= start && i <= end) {
+				return true;
+			}
+		}
+		return false;
+	}
 
   private void doInsideChartCell(final int diff, final int start) {
     final boolean lengthNormalization = op.testOptions.lengthNormalization;
@@ -864,6 +877,9 @@ oScore[split][end][br.rightChild] = totR;
         }
       }
     }
+
+    final boolean crossingConstraint = isCrossingConstraint(start, end);
+    
 
     // 2011-11-26 jdk1.6: caching/hoisting a bunch of variables gives you about 15% speed up!
     // caching this saves a bit of time in the inner loop, maybe 1.8%
@@ -905,6 +921,11 @@ oScore[split][end][br.rightChild] = totR;
         float bestIScore = oldIScore;
         boolean foundBetter;  // always set below for this rule
         //System.out.println("Min "+min+" max "+max+" start "+start+" end "+end);
+        if (crossingConstraint) {
+        	if (stateIndex.get(parentState).charAt(0) != '@') {
+        		continue;
+        	}
+        }
 
         if ( ! lengthNormalization) {
           // find the split that can use this rule to make the max score
@@ -1035,6 +1056,12 @@ oScore[split][end][br.rightChild] = totR;
         float bestIScore = oldIScore;
         boolean foundBetter; // always initialized below
         //System.out.println("Start "+start+" end "+end+" min "+min+" max "+max);
+        if (crossingConstraint) {
+        	if (stateIndex.get(parentState).charAt(0) != '@') {
+        		continue;
+        	}
+        }
+        
         if ( ! lengthNormalization) {
           // find the split that can use this rule to make the max score
           for (int split = min; split <= max; split++) {
@@ -1167,7 +1194,13 @@ oScore[split][end][br.rightChild] = totR;
         float pS = ur.score;
         float tot = iS + pS;
         float cur = iScore_start_end[parentState];
-        boolean foundBetter;  // always set below
+        boolean foundBetter;  // always set below\
+        if (crossingConstraint) {
+        	if (stateIndex.get(parentState).charAt(0) != '@') {
+        		continue;
+        	}
+        }
+        
         if (lengthNormalization) {
           int totWordsInSpan = wordsInSpan[start][end][state];
           float normTot = tot / totWordsInSpan;
@@ -2133,6 +2166,9 @@ oScore[split][end][br.rightChild] = totR;
   protected List<ParserConstraint> getConstraints() {
     return constraints;
   }
+  int[] getIndependentConstraints() {
+	  return this.independentConstraints;
+  }
 
   void setConstraints(List<ParserConstraint> constraints) {
     if (constraints == null) {
@@ -2140,6 +2176,10 @@ oScore[split][end][br.rightChild] = totR;
     } else {
       this.constraints = constraints;
     }
+  }
+  
+  void setIndependentConstraints(int[] constraints) {
+	this.independentConstraints = constraints;  
   }
 
   public ExhaustivePCFGParser(BinaryGrammar bg, UnaryGrammar ug, Lexicon lex, Options op, Index<String> stateIndex, Index<String> wordIndex, Index<String> tagIndex) {

@@ -52,6 +52,9 @@ public class RerankingParserQuery implements ParserQuery {
   public void setConstraints(List<ParserConstraint> constraints) {
     parserQuery.setConstraints(constraints);
   }
+  @Override
+  public void setIndependentConstraints(int[] constraints) {  
+  }
 
   @Override
   public boolean parse(List<? extends HasWord> sentence) {

@@ -216,6 +216,9 @@ public class ShiftReduceParserQuery implements ParserQuery {
   public void setConstraints(List<ParserConstraint> constraints) {
     this.constraints = constraints;
   }
+  @Override
+  public void setIndependentConstraints(int[] constraints) {  
+  }
 
   @Override
   public boolean saidMemMessage() {
