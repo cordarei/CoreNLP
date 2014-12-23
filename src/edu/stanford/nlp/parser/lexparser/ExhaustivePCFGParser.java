@@ -921,11 +921,11 @@ oScore[split][end][br.rightChild] = totR;
         float bestIScore = oldIScore;
         boolean foundBetter;  // always set below for this rule
         //System.out.println("Min "+min+" max "+max+" start "+start+" end "+end);
-        if (crossingConstraint) {
-        	if (stateIndex.get(parentState).charAt(0) != '@') {
-        		continue;
-        	}
-        }
+//        if (crossingConstraint) {
+//        	if (stateIndex.get(parentState).charAt(0) != '@') {
+//        		continue;
+//        	}
+//        }
 
         if ( ! lengthNormalization) {
           // find the split that can use this rule to make the max score
@@ -1056,11 +1056,11 @@ oScore[split][end][br.rightChild] = totR;
         float bestIScore = oldIScore;
         boolean foundBetter; // always initialized below
         //System.out.println("Start "+start+" end "+end+" min "+min+" max "+max);
-        if (crossingConstraint) {
-        	if (stateIndex.get(parentState).charAt(0) != '@') {
-        		continue;
-        	}
-        }
+//        if (crossingConstraint) {
+//        	if (stateIndex.get(parentState).charAt(0) != '@') {
+//        		continue;
+//        	}
+//        }
         
         if ( ! lengthNormalization) {
           // find the split that can use this rule to make the max score
