@@ -642,7 +642,7 @@ public class EvaluateTreebank {
 
       for (Tree goldTree : testTreebank) {
         final List<CoreLabel> sentence = getInputSentence(goldTree);
-        int[] constraints = getIndependentConstraints(goldTree);
+        int[] constraints = null;// getIndependentConstraints(goldTree);
 
         pwErr.println("Parsing [len. " + sentence.size() + "]: " + Sentence.listToString(sentence) +
         		" with constraints: " + Arrays.toString(constraints));
