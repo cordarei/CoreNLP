@@ -976,8 +976,12 @@ public class BiLexPCFGParser implements KBestViterbiParser {
 		if (bg.isSynthetic(state)) {
 			return false;
 		}
+		if (start == 0 && end + 1 >= length) {//what is the correct boundary here?
+			return false;
+		}
 		for(int i : independentConstraints) {
-			if (i >= start && i <= end) {
+			if (i > start && i < end) {
+//				System.err.println("Edge from " + start + " to " + end + " with state " + stateIndex.get(edge.state) + " violates constraint " + i);
 				return true;
 			}
 		}
