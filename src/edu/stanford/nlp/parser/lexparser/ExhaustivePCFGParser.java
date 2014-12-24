@@ -878,7 +878,7 @@ oScore[split][end][br.rightChild] = totR;
       }
     }
 
-    final boolean crossingConstraint = isCrossingConstraint(start, end);
+//    final boolean crossingConstraint = isCrossingConstraint(start, end);
     
 
     // 2011-11-26 jdk1.6: caching/hoisting a bunch of variables gives you about 15% speed up!
@@ -1195,14 +1195,11 @@ oScore[split][end][br.rightChild] = totR;
         float tot = iS + pS;
         float cur = iScore_start_end[parentState];
         boolean foundBetter;  // always set below\
-        if (crossingConstraint) {
-        	if (bg.isSynthetic(parentState)) {
-        		continue;
-        	}
-//        	if (stateIndex.get(parentState).charAt(0) != '@') {
+//        if (crossingConstraint) {
+//        	if (bg.isSynthetic(parentState)) {
 //        		continue;
 //        	}
-        }
+//        }
         
         if (lengthNormalization) {
           int totWordsInSpan = wordsInSpan[start][end][state];

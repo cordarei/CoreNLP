@@ -175,8 +175,11 @@ public class LexicalizedParserQuery implements ParserQuery {
   }
   @Override
   public void setIndependentConstraints(int[] constraints) {
-	  if (pparser != null) {
-		  pparser.setIndependentConstraints(constraints);
+//	  if (pparser != null) {
+//		  pparser.setIndependentConstraints(constraints);
+//	  }
+	  if (bparser != null && bparser instanceof BiLexPCFGParser ) {
+		  ((BiLexPCFGParser)bparser).setIndependentConstraints(constraints);
 	  }
   }
 

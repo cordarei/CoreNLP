@@ -52,6 +52,9 @@ public class BiLexPCFGParser implements KBestViterbiParser {
   protected CoreLabel[] originalLabels;
 
   protected TreeFactory tf = new LabeledScoredTreeFactory();
+  
+  private int[] independentConstraints;
+  //private boolean[] synthetic;
 
   // temp
   protected long relaxHook1 = 0;
@@ -63,6 +66,9 @@ public class BiLexPCFGParser implements KBestViterbiParser {
   protected long builtEdges = 0;
   protected long extractedHooks = 0;
   protected long extractedEdges = 0;
+  
+  protected long notDiscoveredEdges = 0;
+  protected long notProcessedEdges = 0;
 
 
   private static final double TOL = 1e-10;
@@ -246,6 +252,10 @@ public class BiLexPCFGParser implements KBestViterbiParser {
   }
 
   protected void discoverEdge(Edge edge) {
+	  if (violatesConstraints(edge)) {
+		  notDiscoveredEdges++;
+		  return;
+	  }
     // create new edge
     edge.oScore = scorer.oScore(edge);
     agenda.add(edge);
@@ -295,6 +305,7 @@ public class BiLexPCFGParser implements KBestViterbiParser {
   }
 
   protected Hook tempHook;
+
 
   protected void projectHooks(Edge edge) {
     // form hooks
@@ -551,6 +562,10 @@ public class BiLexPCFGParser implements KBestViterbiParser {
   }
 
   protected void processEdge(Edge edge) {
+	  if (violatesConstraints(edge)) {
+		  notProcessedEdges++;
+		  return;
+	  }
     // add to chart
     if (VERBOSE) {
       System.err.println("Adding to chart: " + edge);
@@ -756,6 +771,8 @@ public class BiLexPCFGParser implements KBestViterbiParser {
     builtEdges = 0;
     extractedHooks = 0;
     extractedEdges = 0;
+    notDiscoveredEdges = 0;
+    notProcessedEdges = 0;
     if (op.testOptions.verbose) {
       Timing.tick("Starting combined parse.");
     }
@@ -797,6 +814,9 @@ public class BiLexPCFGParser implements KBestViterbiParser {
           System.err.println("Extracted items:  " + (extractedEdges + extractedHooks));
           System.err.println("Extracted hooks:  " + extractedHooks);
           System.err.println("Extracted edges:  " + extractedEdges);
+          System.err.println("Avoided edges:  " + notDiscoveredEdges + notProcessedEdges);
+          System.err.println("Avoided edges (discoverEdge):  " + notDiscoveredEdges);
+          System.err.println("Avoided edges (processEdge):  " + notProcessedEdges);
           //postMortem();
         }
         if (op.testOptions.printFactoredKGood <= 0) {
@@ -926,6 +946,7 @@ public class BiLexPCFGParser implements KBestViterbiParser {
     this.dparser = dparser;
     this.scorer = scorer;
     this.bg = bg;
+    //this.synthetic = bg.getSyntheticArray();
     this.ug = ug;
     this.dg = dg;
     this.lex = lex;
@@ -937,6 +958,31 @@ public class BiLexPCFGParser implements KBestViterbiParser {
     tempEdge = new Edge(op.testOptions.exhaustiveTest);
     tempHook = new Hook(op.testOptions.exhaustiveTest);
   }
+  
+  public void setIndependentConstraints(int[] constraints) {
+	independentConstraints = constraints;  
+  }
+  public int[] getIndependentConstraints() {
+	  return independentConstraints;
+  }
+	
+	private boolean violatesConstraints(Edge edge) {
+		final int state = edge.state;
+		final int start = edge.start;
+		final int end = edge.end;
+		if (independentConstraints == null) {
+			return false;
+		}
+		if (bg.isSynthetic(state)) {
+			return false;
+		}
+		for(int i : independentConstraints) {
+			if (i >= start && i <= end) {
+				return true;
+			}
+		}
+		return false;
+	}
 
   public static class N5BiLexPCFGParser extends BiLexPCFGParser {
 

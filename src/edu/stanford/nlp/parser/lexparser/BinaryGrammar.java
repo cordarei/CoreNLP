@@ -44,6 +44,9 @@ public class BinaryGrammar implements Serializable, Iterable<BinaryRule> {
   public boolean isSynthetic(int state) {
     return synthetic[state];
   }
+  public boolean[] getSyntheticArray() {
+	  return synthetic;
+  }
 
   /**
    * Populates the "splitRules" accessor lists using the existing rule lists.
