@@ -740,6 +740,9 @@ public class Options implements Serializable {
     } else if (args[i].equalsIgnoreCase("-testingThreads")) {
       testOptions.testingThreads = Integer.parseInt(args[i + 1]);
       i += 2;
+    } else if (args[i].equalsIgnoreCase("-indConstMinSentLen")) {
+        testOptions.independentConstraintsMinSentenceLength = Integer.parseInt(args[i + 1]);
+        i += 2;
     } else if (args[i].equalsIgnoreCase("-evals")) {
       testOptions.evals = StringUtils.stringToProperties(args[i+1], testOptions.evals);
       i += 2;

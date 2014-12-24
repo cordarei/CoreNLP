@@ -279,6 +279,11 @@ public class TestOptions implements Serializable {
    * When evaluating, don't print out tons of text.  Only print out the final scores
    */
   public boolean quietEvaluation = false;
+  
+  /**
+   * Minimum sentence length on which to apply independent constraints.
+   */
+  public int independentConstraintsMinSentenceLength = 0;
 
   /**
    * Determines method for print trees on output.
