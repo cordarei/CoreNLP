@@ -642,13 +642,13 @@ public class EvaluateTreebank {
 
       for (Tree goldTree : testTreebank) {
         final List<CoreLabel> sentence = getInputSentence(goldTree);
-        int[] constraints = null;
+        IndependentSpanConstraints constraints = null;
         if (op.testOptions.independentConstraintsMinSentenceLength <= sentence.size()) {
-          constraints = getIndependentConstraints(goldTree);
+          constraints = new IndependentSpanConstraints(goldTree);
         }
 
         pwErr.println("Parsing [len. " + sentence.size() + "]: " + Sentence.listToString(sentence) +
-        		" with constraints: " + Arrays.toString(constraints));
+        		" with constraints: " + constraints);
 
         pq.setIndependentConstraints(constraints);
         Timing parseTimer = new Timing();
@@ -741,17 +741,17 @@ public class EvaluateTreebank {
     return f1;
   } // end testOnTreebank()
 
-private int[] getIndependentConstraints(Tree goldTree) {
-	Tree t = goldTree.skipRoot();
-	ArrayList<Integer> constraints = new ArrayList<Integer>();
-	int total = 0;
-	for (Tree child : t.children()) {
-		total += child.yield().size();
-		constraints.add(total);
-	}
-	constraints.remove(constraints.size()-1);
-	return CollectionUtils.asIntArray(constraints);
-}
+//private int[] getIndependentConstraints(Tree goldTree) {
+//	Tree t = goldTree.skipRoot();
+//	ArrayList<Integer> constraints = new ArrayList<Integer>();
+//	int total = 0;
+//	for (Tree child : t.children()) {
+//		total += child.yield().size();
+//		constraints.add(total);
+//	}
+//	constraints.remove(constraints.size()-1);
+//	return CollectionUtils.asIntArray(constraints);
+//}
 
 
 

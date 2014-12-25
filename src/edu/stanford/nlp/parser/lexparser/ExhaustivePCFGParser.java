@@ -118,7 +118,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
    * saves quite a bit of time.
    */
   protected List<ParserConstraint> constraints = null;
-  protected int[] independentConstraints = null;
+  protected IndependentSpanConstraints independentConstraints = null;
 
   private CoreLabel getCoreLabel(int labelIndex) {
     if (originalCoreLabels[labelIndex] != null) {
@@ -848,19 +848,6 @@ oScore[split][end][br.rightChild] = totR;
       } // for start
     } // for diff (i.e., span)
   } // end doInsideScores()
-  
-	private boolean isCrossingConstraint(final int start, final int end) {
-		final int[] constraints = getIndependentConstraints();
-		if (constraints == null) {
-			return false;
-		}
-		for(int i : constraints) {
-			if (i >= start && i <= end) {
-				return true;
-			}
-		}
-		return false;
-	}
 
   private void doInsideChartCell(final int diff, final int start) {
     final boolean lengthNormalization = op.testOptions.lengthNormalization;
@@ -878,7 +865,7 @@ oScore[split][end][br.rightChild] = totR;
       }
     }
 
-//    final boolean crossingConstraint = isCrossingConstraint(start, end);
+//    final boolean crossingConstraint = independentConstraints != null && independentConstraints.violatesConstraints(start, end);
     
 
     // 2011-11-26 jdk1.6: caching/hoisting a bunch of variables gives you about 15% speed up!
@@ -1196,7 +1183,7 @@ oScore[split][end][br.rightChild] = totR;
         float cur = iScore_start_end[parentState];
         boolean foundBetter;  // always set below\
 //        if (crossingConstraint) {
-//        	if (bg.isSynthetic(parentState)) {
+//        	if (!bg.isSynthetic(parentState)) {
 //        		continue;
 //        	}
 //        }
@@ -2166,7 +2153,7 @@ oScore[split][end][br.rightChild] = totR;
   protected List<ParserConstraint> getConstraints() {
     return constraints;
   }
-  int[] getIndependentConstraints() {
+  IndependentSpanConstraints getIndependentConstraints() {
 	  return this.independentConstraints;
   }
 
@@ -2178,7 +2165,7 @@ oScore[split][end][br.rightChild] = totR;
     }
   }
   
-  void setIndependentConstraints(int[] constraints) {
+  void setIndependentConstraints(IndependentSpanConstraints constraints) {
 	this.independentConstraints = constraints;  
   }
 

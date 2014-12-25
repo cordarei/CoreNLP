@@ -5,6 +5,7 @@ import java.util.List;
 
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.parser.KBestViterbiParser;
+import edu.stanford.nlp.parser.lexparser.IndependentSpanConstraints;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.ScoredObject;
 
@@ -40,7 +41,7 @@ public interface ParserQuery {
   KBestViterbiParser getDependencyParser();
 
   void setConstraints(List<ParserConstraint> constraints);
-  void setIndependentConstraints(int[] constraints);
+  void setIndependentConstraints(IndependentSpanConstraints constraints);
 
   boolean saidMemMessage();
 

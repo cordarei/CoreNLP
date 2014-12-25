@@ -53,7 +53,7 @@ public class RerankingParserQuery implements ParserQuery {
     parserQuery.setConstraints(constraints);
   }
   @Override
-  public void setIndependentConstraints(int[] constraints) {  
+  public void setIndependentConstraints(IndependentSpanConstraints constraints) {  
   }
 
   @Override

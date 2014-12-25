@@ -53,7 +53,7 @@ public class BiLexPCFGParser implements KBestViterbiParser {
 
   protected TreeFactory tf = new LabeledScoredTreeFactory();
   
-  private int[] independentConstraints;
+  private IndependentSpanConstraints independentConstraints;
   //private boolean[] synthetic;
 
   // temp
@@ -216,6 +216,10 @@ public class BiLexPCFGParser implements KBestViterbiParser {
     // if (tempEdge.iScore > scorer.iScore(tempEdge)+1e-4) {
     //   System.err.println(tempEdge+" has i "+tempEdge.iScore+" iE "+scorer.iScore(tempEdge));
     // }
+//	  if (violatesConstraints(tempEdge)) {
+//		  notDiscoveredEdges++;
+//		  return;
+//	  }
     Edge resultEdge = (Edge) interner.intern(tempEdge);
     if (VERBOSE) {
       System.err.printf("Formed %s %s %.2f was %.2f better? %b\n", (resultEdge == tempEdge ? "new" : "pre-existing"), resultEdge, tempEdge.iScore, resultEdge.iScore, better(tempEdge.iScore, resultEdge.iScore));
@@ -562,10 +566,10 @@ public class BiLexPCFGParser implements KBestViterbiParser {
   }
 
   protected void processEdge(Edge edge) {
-	  if (violatesConstraints(edge)) {
-		  notProcessedEdges++;
-		  return;
-	  }
+//	  if (violatesConstraints(edge)) {
+//		  notProcessedEdges++;
+//		  return;
+//	  }
     // add to chart
     if (VERBOSE) {
       System.err.println("Adding to chart: " + edge);
@@ -804,7 +808,7 @@ public class BiLexPCFGParser implements KBestViterbiParser {
       }
       //if (item.end < 5) System.err.println("Extracted: "+item+" iScore "+item.iScore+" oScore "+item.oScore+" score "+item.score());
       if (item.equals(goal)) {
-        if (op.testOptions.verbose) {
+        if (op.testOptions.verbose || independentConstraints != null) {
           System.err.println("Found goal!");
           System.err.println("Comb iScore " + item.iScore); // was goal.iScore
           Timing.tick("Done, parse found.");
@@ -814,7 +818,7 @@ public class BiLexPCFGParser implements KBestViterbiParser {
           System.err.println("Extracted items:  " + (extractedEdges + extractedHooks));
           System.err.println("Extracted hooks:  " + extractedHooks);
           System.err.println("Extracted edges:  " + extractedEdges);
-          System.err.println("Avoided edges:  " + notDiscoveredEdges + notProcessedEdges);
+          System.err.println("Avoided edges:  " + (notDiscoveredEdges + notProcessedEdges));
           System.err.println("Avoided edges (discoverEdge):  " + notDiscoveredEdges);
           System.err.println("Avoided edges (processEdge):  " + notProcessedEdges);
           //postMortem();
@@ -959,33 +963,34 @@ public class BiLexPCFGParser implements KBestViterbiParser {
     tempHook = new Hook(op.testOptions.exhaustiveTest);
   }
   
-  public void setIndependentConstraints(int[] constraints) {
+  public void setIndependentConstraints(IndependentSpanConstraints constraints) {
 	independentConstraints = constraints;  
   }
-  public int[] getIndependentConstraints() {
+  public IndependentSpanConstraints getIndependentConstraints() {
 	  return independentConstraints;
   }
 	
 	private boolean violatesConstraints(Edge edge) {
 		final int state = edge.state;
-		final int start = edge.start;
-		final int end = edge.end;
+//		final int start = edge.start;
+//		final int end = edge.end;
 		if (independentConstraints == null) {
 			return false;
 		}
 		if (bg.isSynthetic(state)) {
 			return false;
 		}
-		if (start == 0 && end + 1 >= length) {//what is the correct boundary here?
-			return false;
-		}
-		for(int i : independentConstraints) {
-			if (i > start && i < end) {
-//				System.err.println("Edge from " + start + " to " + end + " with state " + stateIndex.get(edge.state) + " violates constraint " + i);
-				return true;
-			}
-		}
-		return false;
+//		if (start == 0 && end + 1 >= length) {//what is the correct boundary here?
+//			return false;
+//		}
+//		for(int i : independentConstraints) {
+//			if (i > start && i < end) {
+////				System.err.println("Edge from " + start + " to " + end + " with state " + stateIndex.get(edge.state) + " violates constraint " + i);
+//				return true;
+//			}
+//		}
+//		return false;
+		return independentConstraints.violatesConstraints(edge.start, edge.end);
 	}
 
   public static class N5BiLexPCFGParser extends BiLexPCFGParser {

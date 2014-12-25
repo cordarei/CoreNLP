@@ -15,6 +15,7 @@ import edu.stanford.nlp.parser.KBestViterbiParser;
 import edu.stanford.nlp.parser.common.ParserConstraint;
 import edu.stanford.nlp.parser.common.ParserQuery;
 import edu.stanford.nlp.parser.lexparser.Debinarizer;
+import edu.stanford.nlp.parser.lexparser.IndependentSpanConstraints;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.Generics;
 import edu.stanford.nlp.util.ScoredComparator;
@@ -217,7 +218,7 @@ public class ShiftReduceParserQuery implements ParserQuery {
     this.constraints = constraints;
   }
   @Override
-  public void setIndependentConstraints(int[] constraints) {  
+  public void setIndependentConstraints(IndependentSpanConstraints constraints) {  
   }
 
   @Override
