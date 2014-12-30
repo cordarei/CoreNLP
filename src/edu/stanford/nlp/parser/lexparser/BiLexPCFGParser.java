@@ -209,6 +209,10 @@ public class BiLexPCFGParser implements KBestViterbiParser {
     tempEdge.iScore = hook.iScore + edge.iScore;
     tempEdge.backEdge = edge;
     tempEdge.backHook = hook;
+	  if (violatesConstraints(tempEdge)) {
+		  notDiscoveredEdges++;
+		  return;
+	  }
     relaxTempEdge();
   }
 
@@ -256,10 +260,10 @@ public class BiLexPCFGParser implements KBestViterbiParser {
   }
 
   protected void discoverEdge(Edge edge) {
-	  if (violatesConstraints(edge)) {
-		  notDiscoveredEdges++;
-		  return;
-	  }
+//	  if (violatesConstraints(edge)) {
+//		  notDiscoveredEdges++;
+//		  return;
+//	  }
     // create new edge
     edge.oScore = scorer.oScore(edge);
     agenda.add(edge);
@@ -312,6 +316,12 @@ public class BiLexPCFGParser implements KBestViterbiParser {
 
 
   protected void projectHooks(Edge edge) {
+	  final int start = edge.start;
+	  final int end = edge.end;
+	  final int state = edge.state;
+	  if (start == length) {
+		  System.err.println("Edge: " + stateIndex.get(state) + " :" + start + "," + end);
+	  }
     // form hooks
     // POST HOOKS
     //for (Iterator rI = bg.ruleIteratorByLeftChild(edge.state);
@@ -335,7 +345,10 @@ public class BiLexPCFGParser implements KBestViterbiParser {
       		}
       	}
       }
-      for (int head = edge.end; head < length; head++) {
+      int last = length;
+//      if (independentConstraints != null && !bg.isSynthetic(state))
+//    	  last = independentConstraints.getNextConstraint(start);
+      for (int head = edge.end; head < last; head++) {
         // cdm Apr 2006: avoid Iterator allocation
         // for (Iterator iTWI = taggedWordList[head].iterator(); iTWI.hasNext();) {
         // IntTaggedWord iTW = (IntTaggedWord) iTWI.next();
@@ -379,7 +392,11 @@ public class BiLexPCFGParser implements KBestViterbiParser {
       		}
       	}
       }
-      for (int head = 0; head < edge.start; head++) {
+      int first = 0;
+//      if (independentConstraints != null && !bg.isSynthetic(state)) {
+//    	  first = independentConstraints.getPrevConstraint(start);
+//      }
+      for (int head = first; head < edge.start; head++) {
         // cdm Apr 2006: avoid Iterator allocation
         // for (Iterator iTWI = taggedWordList[head].iterator(); iTWI.hasNext();) {
         //IntTaggedWord iTW = (IntTaggedWord) iTWI.next();
@@ -808,7 +825,7 @@ public class BiLexPCFGParser implements KBestViterbiParser {
       }
       //if (item.end < 5) System.err.println("Extracted: "+item+" iScore "+item.iScore+" oScore "+item.oScore+" score "+item.score());
       if (item.equals(goal)) {
-        if (op.testOptions.verbose || independentConstraints != null) {
+        if (op.testOptions.verbose) {
           System.err.println("Found goal!");
           System.err.println("Comb iScore " + item.iScore); // was goal.iScore
           Timing.tick("Done, parse found.");
@@ -972,8 +989,8 @@ public class BiLexPCFGParser implements KBestViterbiParser {
 	
 	private boolean violatesConstraints(Edge edge) {
 		final int state = edge.state;
-//		final int start = edge.start;
-//		final int end = edge.end;
+		final int start = edge.start;
+		final int end = edge.end;
 		if (independentConstraints == null) {
 			return false;
 		}
@@ -990,7 +1007,7 @@ public class BiLexPCFGParser implements KBestViterbiParser {
 //			}
 //		}
 //		return false;
-		return independentConstraints.violatesConstraints(edge.start, edge.end);
+		return independentConstraints.violatesConstraints(start, end);
 	}
 
   public static class N5BiLexPCFGParser extends BiLexPCFGParser {

@@ -8,34 +8,52 @@ import edu.stanford.nlp.util.CollectionUtils;
 
 public class IndependentSpanConstraints {
 	final int[] constraints;
-	final boolean[] violations;
+	final int[] nextConstraints;
+	final int[] prevConstraints;
+//	final boolean[] violations;
 	final int length;
 	
 	public IndependentSpanConstraints(Tree goldTree) {
-		length = goldTree.yield().size();
+		length = goldTree.yield().size() + 1;
 		constraints = getConstraints(goldTree);
-		
-		violations = new boolean[length*length];
-		
-		int start = 0;
-		for (int i : constraints) {
-			while (start < i) {
-				for (int end = start + 1; end <= i; end++) {
-					violations[start*length + end] = false;
-				}
-				for (int end = i + 1; end <= length; end++) {
-					violations[start*length + end] = true;
-				}
-				start++;
+		nextConstraints = new int[length];
+		for (int i = 0, j = 0; i < length; i++) {
+			if (i == constraints[j]) {
+				j += 1;
 			}
+			nextConstraints[i] = constraints[j];
 		}
-		while (start < length) {
-			for (int end = start + 2; end <=length; end++) {
-				violations[start*length + end] = false;
+		prevConstraints = new int[length];
+		for (int i = 0, j = 0, prev=0; i < length; i++) {
+			if (i == constraints[j]) {
+				prev = constraints[j];
+				j += 1;
 			}
-			start++;
+			prevConstraints[i] = prev;
 		}
+//		violations = new boolean[length*length];
+		
+//		int start = 0;
+//		for (int i : constraints) {
+//			while (start < i) {
+//				for (int end = start + 1; end <= i; end++) {
+//					violations[start*length + end] = false;
+//				}
+//				for (int end = i + 1; end <= length; end++) {
+//					violations[start*length + end] = true;
+//				}
+//				start++;
+//			}
+//		}
+//		while (start < length) {
+//			for (int end = start + 2; end <=length; end++) {
+//				violations[start*length + end] = false;
+//			}
+//			start++;
+//		}
 //		System.err.println("Constraints: " + Arrays.toString(constraints));
+//		System.err.println("NextConstraints: " + Arrays.toString(nextConstraints));
+//		System.err.println("PrevConstraints: " + Arrays.toString(prevConstraints));
 //		for (int i = 0; i < length; i++) {
 //			for (int j = i + 2; j <= length; j++) {
 //				System.err.println("Span: (" + i + "," + j + ") is violation?: " + violations[i*length + j]);
@@ -56,8 +74,14 @@ public class IndependentSpanConstraints {
 //				return true;
 //			}
 //		}
-//		return false;
-		return violations[start*length + end];
+		return end > nextConstraints[start];
+//		return violations[start*length + end];
+	}
+	public int getNextConstraint(final int start) {
+		return nextConstraints[start];
+	}
+	public int getPrevConstraint(final int start) {
+		return prevConstraints[start];
 	}
 	
 	private int[] getConstraints(Tree goldTree) {
@@ -68,7 +92,8 @@ public class IndependentSpanConstraints {
 			total += child.yield().size();
 			constraints.add(total);
 		}
-		constraints.remove(constraints.size()-1);
+		constraints.add(total + 1);
+		//constraints.remove(constraints.size()-1);
 		return CollectionUtils.asIntArray(constraints);
 	}
 	
