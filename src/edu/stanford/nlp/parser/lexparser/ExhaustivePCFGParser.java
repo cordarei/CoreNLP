@@ -865,7 +865,7 @@ oScore[split][end][br.rightChild] = totR;
       }
     }
 
-//    final boolean crossingConstraint = independentConstraints != null && independentConstraints.violatesConstraints(start, end);
+    final boolean crossingConstraint = independentConstraints != null && independentConstraints.violatesConstraints(start, end);
     
 
     // 2011-11-26 jdk1.6: caching/hoisting a bunch of variables gives you about 15% speed up!
@@ -908,11 +908,11 @@ oScore[split][end][br.rightChild] = totR;
         float bestIScore = oldIScore;
         boolean foundBetter;  // always set below for this rule
         //System.out.println("Min "+min+" max "+max+" start "+start+" end "+end);
-//        if (crossingConstraint) {
-//        	if (stateIndex.get(parentState).charAt(0) != '@') {
-//        		continue;
-//        	}
-//        }
+        if (crossingConstraint) {
+        	if (!bg.isSynthetic(parentState)) {
+        		continue;
+        	}
+        }
 
         if ( ! lengthNormalization) {
           // find the split that can use this rule to make the max score
@@ -1043,11 +1043,11 @@ oScore[split][end][br.rightChild] = totR;
         float bestIScore = oldIScore;
         boolean foundBetter; // always initialized below
         //System.out.println("Start "+start+" end "+end+" min "+min+" max "+max);
-//        if (crossingConstraint) {
-//        	if (stateIndex.get(parentState).charAt(0) != '@') {
-//        		continue;
-//        	}
-//        }
+        if (crossingConstraint) {
+        	if (!bg.isSynthetic(parentState)) {
+        		continue;
+        	}
+        }
         
         if ( ! lengthNormalization) {
           // find the split that can use this rule to make the max score
@@ -1149,6 +1149,9 @@ oScore[split][end][br.rightChild] = totR;
     if (spillGuts) {
       tick("Unaries for span " + diff + "...");
     }
+	if (crossingConstraint) { //skip unary rules
+		return;
+	}
     // do unary rules -- one could promote this loop and put start inside
     for (int state = 0; state < numStates; state++) {
       float iS = iScore_start_end[state];
@@ -1182,11 +1185,7 @@ oScore[split][end][br.rightChild] = totR;
         float tot = iS + pS;
         float cur = iScore_start_end[parentState];
         boolean foundBetter;  // always set below\
-//        if (crossingConstraint) {
-//        	if (!bg.isSynthetic(parentState)) {
-//        		continue;
-//        	}
-//        }
+
         
         if (lengthNormalization) {
           int totWordsInSpan = wordsInSpan[start][end][state];
