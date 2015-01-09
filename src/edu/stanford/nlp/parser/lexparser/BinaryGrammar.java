@@ -27,6 +27,8 @@ public class BinaryGrammar implements Serializable, Iterable<BinaryRule> {
   private transient Set<BinaryRule>[] ruleSetWithRC;
   private transient BinaryRule[][] splitRulesWithLC;
   private transient BinaryRule[][] splitRulesWithRC;
+  private transient BinaryRule[][] splitSyntheticRulesWithLC;
+  private transient BinaryRule[][] splitSyntheticRulesWithRC;
   //  private transient BinaryRule[][] splitRulesWithParent = null;
   private transient Map<BinaryRule,BinaryRule> ruleMap;
   // for super speed! (maybe)
@@ -72,6 +74,8 @@ public class BinaryGrammar implements Serializable, Iterable<BinaryRule> {
 
     splitRulesWithLC = new BinaryRule[numStates][];
     splitRulesWithRC = new BinaryRule[numStates][];
+    splitSyntheticRulesWithLC = new BinaryRule[numStates][];
+    splitSyntheticRulesWithRC = new BinaryRule[numStates][];
     //    splitRulesWithParent = new BinaryRule[numStates][];
     // rules accessed by their "synthetic" child or left child if none
     for (int state = 0; state < numStates; state++) {
@@ -106,6 +110,20 @@ public class BinaryGrammar implements Serializable, Iterable<BinaryRule> {
       }
       // parent accessor
       //      splitRulesWithParent[state] = toBRArray(rulesWithParent[state]);
+      List<BinaryRule> ruleList = new ArrayList<BinaryRule>();
+      for (BinaryRule br : splitRulesWithLC[state]) {
+    	  if ( isSynthetic(br.parent)) {
+    		  ruleList.add(br);
+    	  }
+      }
+      splitSyntheticRulesWithLC[state] = ruleList.toArray(new BinaryRule[ruleList.size()]);
+      ruleList.clear();
+      for (BinaryRule br : splitRulesWithRC[state]) {
+    	  if ( isSynthetic(br.parent)) {
+    		  ruleList.add(br);
+    	  }
+      }
+      splitSyntheticRulesWithRC[state] = ruleList.toArray(new BinaryRule[ruleList.size()]);
     }
   }
 
@@ -123,6 +141,20 @@ public class BinaryGrammar implements Serializable, Iterable<BinaryRule> {
     return splitRulesWithRC[state];
   }
 
+  public BinaryRule[] splitSyntheticRulesWithLC(int state) {
+    // if (state >= splitRulesWithLC.length) {
+    //   return EMPTY_BINARY_RULE_ARRAY;
+    // }
+    return splitSyntheticRulesWithLC[state];
+  }
+
+  public BinaryRule[] splitSyntheticRulesWithRC(int state) {
+    // if (state >= splitRulesWithRC.length) {
+    //   return EMPTY_BINARY_RULE_ARRAY;
+    // }
+    return splitSyntheticRulesWithRC[state];
+  }
+  
   //  public BinaryRule[] splitRulesWithParent(int state) {
   //    return splitRulesWithParent[state];
   //  }
