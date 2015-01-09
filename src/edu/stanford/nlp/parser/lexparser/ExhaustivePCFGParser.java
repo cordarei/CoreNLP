@@ -850,6 +850,10 @@ oScore[split][end][br.rightChild] = totR;
   } // end doInsideScores()
 
   private void doInsideChartCell(final int diff, final int start) {
+	  doInsideChartCell(diff, start, false);
+  }
+  
+  private void doInsideChartCell(final int diff, final int start, final boolean syntheticOnly) {
     final boolean lengthNormalization = op.testOptions.lengthNormalization;
     if (spillGuts) {
       tick("Binaries for span " + diff + " start " + start + " ...");
@@ -864,9 +868,6 @@ oScore[split][end][br.rightChild] = totR;
         }
       }
     }
-
-//    final boolean crossingConstraint = independentConstraints != null && independentConstraints.violatesConstraints(start, end);
-    
 
     // 2011-11-26 jdk1.6: caching/hoisting a bunch of variables gives you about 15% speed up!
     // caching this saves a bit of time in the inner loop, maybe 1.8%
@@ -908,11 +909,6 @@ oScore[split][end][br.rightChild] = totR;
         float bestIScore = oldIScore;
         boolean foundBetter;  // always set below for this rule
         //System.out.println("Min "+min+" max "+max+" start "+start+" end "+end);
-//        if (crossingConstraint) {
-//        	if (!bg.isSynthetic(parentState)) {
-//        		continue;
-//        	}
-//        }
 
         if ( ! lengthNormalization) {
           // find the split that can use this rule to make the max score
@@ -1043,11 +1039,6 @@ oScore[split][end][br.rightChild] = totR;
         float bestIScore = oldIScore;
         boolean foundBetter; // always initialized below
         //System.out.println("Start "+start+" end "+end+" min "+min+" max "+max);
-//        if (crossingConstraint) {
-//        	if (!bg.isSynthetic(parentState)) {
-//        		continue;
-//        	}
-//        }
         
         if ( ! lengthNormalization) {
           // find the split that can use this rule to make the max score
@@ -1149,9 +1140,7 @@ oScore[split][end][br.rightChild] = totR;
     if (spillGuts) {
       tick("Unaries for span " + diff + "...");
     }
-//	if (crossingConstraint) { //skip unary rules
-//		return;
-//	}
+
     // do unary rules -- one could promote this loop and put start inside
     for (int state = 0; state < numStates; state++) {
       float iS = iScore_start_end[state];
