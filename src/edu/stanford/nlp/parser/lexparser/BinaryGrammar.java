@@ -76,38 +76,40 @@ public class BinaryGrammar implements Serializable, Iterable<BinaryRule> {
     splitRulesWithRC = new BinaryRule[numStates][];
     splitSyntheticRulesWithLC = new BinaryRule[numStates][];
     splitSyntheticRulesWithRC = new BinaryRule[numStates][];
+    int synthrules = 0;
+    int totrules = 0;
     //    splitRulesWithParent = new BinaryRule[numStates][];
     // rules accessed by their "synthetic" child or left child if none
     for (int state = 0; state < numStates; state++) {
       //      System.out.println("Splitting rules for state: " + index.get(state));
       // check synthetic
-      if (isSynthetic(state)) {
+//      if (isSynthetic(state)) {
         splitRulesWithLC[state] = rulesWithLC[state].toArray(new BinaryRule[rulesWithLC[state].size()]);
         // cdm 2012: I thought sorting the rules might help with speed (memory locality) but didn't seem to
         // Arrays.sort(splitRulesWithLC[state]);
         splitRulesWithRC[state] = rulesWithRC[state].toArray(new BinaryRule[rulesWithRC[state].size()]);
         // Arrays.sort(splitRulesWithRC[state]);
-      } else {
-        // if state is not synthetic, we add rule to splitRules only if both children are not synthetic
-        // do left
-        List<BinaryRule> ruleList = new ArrayList<BinaryRule>();
-        for (BinaryRule br : rulesWithLC[state]) {
-          if ( ! isSynthetic(br.rightChild)) {
-            ruleList.add(br);
-          }
-        }
-        splitRulesWithLC[state] = ruleList.toArray(new BinaryRule[ruleList.size()]);
-        // Arrays.sort(splitRulesWithLC[state]);
-        // do right
-        ruleList.clear();
-        for (BinaryRule br : rulesWithRC[state]) {
-          if ( ! isSynthetic(br.leftChild)) {
-            ruleList.add(br);
-          }
-        }
-        splitRulesWithRC[state] = ruleList.toArray(new BinaryRule[ruleList.size()]);
-        // Arrays.sort(splitRulesWithRC[state]);
-      }
+//      } else {
+//        // if state is not synthetic, we add rule to splitRules only if both children are not synthetic
+//        // do left
+//        List<BinaryRule> ruleList = new ArrayList<BinaryRule>();
+//        for (BinaryRule br : rulesWithLC[state]) {
+//          if ( ! isSynthetic(br.rightChild)) {
+//            ruleList.add(br);
+//          }
+//        }
+//        splitRulesWithLC[state] = ruleList.toArray(new BinaryRule[ruleList.size()]);
+//        // Arrays.sort(splitRulesWithLC[state]);
+//        // do right
+//        ruleList.clear();
+//        for (BinaryRule br : rulesWithRC[state]) {
+//          if ( ! isSynthetic(br.leftChild)) {
+//            ruleList.add(br);
+//          }
+//        }
+//        splitRulesWithRC[state] = ruleList.toArray(new BinaryRule[ruleList.size()]);
+//        // Arrays.sort(splitRulesWithRC[state]);
+//      }
       // parent accessor
       //      splitRulesWithParent[state] = toBRArray(rulesWithParent[state]);
       List<BinaryRule> ruleList = new ArrayList<BinaryRule>();
@@ -117,6 +119,9 @@ public class BinaryGrammar implements Serializable, Iterable<BinaryRule> {
     	  }
       }
       splitSyntheticRulesWithLC[state] = ruleList.toArray(new BinaryRule[ruleList.size()]);
+      synthrules += splitSyntheticRulesWithLC[state].length;
+      totrules += splitRulesWithLC[state].length;
+      
       ruleList.clear();
       for (BinaryRule br : splitRulesWithRC[state]) {
     	  if ( isSynthetic(br.parent)) {
@@ -124,7 +129,10 @@ public class BinaryGrammar implements Serializable, Iterable<BinaryRule> {
     	  }
       }
       splitSyntheticRulesWithRC[state] = ruleList.toArray(new BinaryRule[ruleList.size()]);
+      synthrules += splitSyntheticRulesWithRC[state].length;
+      totrules += splitRulesWithRC[state].length;
     }
+    System.err.println("synthetic rules: " + synthrules + "/" + totrules );
   }
 
   public BinaryRule[] splitRulesWithLC(int state) {

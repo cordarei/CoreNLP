@@ -119,6 +119,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
    */
   protected List<ParserConstraint> constraints = null;
   protected IndependentSpanConstraints independentConstraints = null;
+  int totalRulesChecked = 0;
 
   private CoreLabel getCoreLabel(int labelIndex) {
     if (originalCoreLabels[labelIndex] != null) {
@@ -309,7 +310,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
   }
 
 
-  static final boolean spillGuts = false;
+  static final boolean spillGuts = true;
   static final boolean dumpTagging = false;
   private long time = System.currentTimeMillis();
 
@@ -783,50 +784,6 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
             }
           }
         }
-        /*
-          for (int s = 0; s < numStates; s++) {
-          float oS = oScore[start][end][s];
-          //if (iScore[start][end][s] == Float.NEGATIVE_INFINITY ||
-          //             oS == Float.NEGATIVE_INFINITY)
-          if (oS == Float.NEGATIVE_INFINITY)
-          continue;
-          BinaryRule[] rules = bg.splitRulesWithParent(s);
-          for (int r=0; r<rules.length; r++) {
-            BinaryRule br = rules[r];
-            int min1 = narrowRExtent[start][br.leftChild];
-            if (end < min1)
-              continue;
-            int max1 = narrowLExtent[end][br.rightChild];
-            if (max1 < min1)
-              continue;
-            int min2 = wideLExtent[end][br.rightChild];
-            int min = (min1 > min2 ? min1 : min2);
-            if (max1 < min)
-              continue;
-            int max2 = wideRExtent[start][br.leftChild];
-            int max = (max1 < max2 ? max1 : max2);
-            if (max < min)
-              continue;
-float pS = (float) br.score;
-for (int split = min; split <= max; split++) {
-float lS = iScore[start][split][br.leftChild];
-if (lS == Float.NEGATIVE_INFINITY)
-          continue;
-float rS = iScore[split][end][br.rightChild];
-              if (rS == Float.NEGATIVE_INFINITY)
-continue;
-float totL = pS+rS+oS;
-if (totL > oScore[start][split][br.leftChild]) {
-oScore[start][split][br.leftChild] = totL;
-}
-float totR = pS+lS+oS;
-if (totR > oScore[split][end][br.rightChild]) {
-oScore[split][end][br.rightChild] = totR;
-}
-}
-}
-}
-        */
       }
     }
   }
@@ -835,30 +792,80 @@ oScore[split][end][br.rightChild] = totR;
    *  of length 2 or more.
    */
   void doInsideScores() {
-    for (int diff = 2; diff <= length; diff++) {
-      if (Thread.interrupted()) {
-        throw new RuntimeInterruptedException();
-      }
-
-      // usually stop one short because boundary symbol only combines
-      // with whole sentence span. So for 3 word sentence + boundary = 4,
-      // length == 4, and do [0,2], [1,3]; [0,3]; [0,4]
-      for (int start = 0; start < ((diff == length) ? 1: length - diff); start++) {
-        doInsideChartCell(diff, start);
-      } // for start
-    } // for diff (i.e., span)
-  } // end doInsideScores()
-
-  private void doInsideChartCell(final int diff, final int start) {
-	  doInsideChartCell(diff, start, false);
+//    for (int diff = 2; diff <= length; diff++) {
+//      if (Thread.interrupted()) {
+//        throw new RuntimeInterruptedException();
+//      }
+//
+//      // usually stop one short because boundary symbol only combines
+//      // with whole sentence span. So for 3 word sentence + boundary = 4,
+//      // length == 4, and do [0,2], [1,3]; [0,3]; [0,4]
+//      for (int start = 0; start < ((diff == length) ? 1: length - diff); start++) {
+//        doInsideChartCell(diff, start);
+//      }
+//    }
+//	  if (independentConstraints == null) {
+	  totalRulesChecked = 0;
+		  doInsideScoresRange(0, length - 1);
+		  doInsideChartCell(length, 0);
+		  System.err.println("Total rules checked: " + totalRulesChecked);
+//	  } else {
+//		  //do inside constraints
+//		  int start = 0;
+//		  while (start < length - 1) {
+//			  int end = independentConstraints.getNextConstraint(start);
+//			  doInsideScoresRange(start, end);
+//			  start = end;
+//		  }
+//		  //do around constraints (synthetic only)
+//		  for (int diff = 2; diff < length; diff++) {
+//			  start = 0;
+//			  while (start < length - 1) {
+//				  int end = independentConstraints.getNextConstraint(start);
+//				  
+//				  int first = Math.max(start, end - diff + 1);
+//				  int last = Math.min(end - 1, length - diff - 1);
+//
+//				  for (int i = first; i <= last; i++){
+//					  doInsideChartCell(diff, i, true);
+//				  }
+//				  
+//				  if (last < end - 1)
+//					  break;
+//
+//				  start = end;
+//			  }
+//		  }
+//		  //do last cell
+//		  doInsideChartCell(length, 0);
+//	  }
   }
   
-  private void doInsideChartCell(final int diff, final int start, final boolean syntheticOnly) {
+  //do CKY in range [start,end)
+  private void doInsideScoresRange(final int start, final int end) {
+	  final int len = end - start;
+	  for (int diff = 2; diff <= len; diff++) {
+		  if (Thread.interrupted()) {
+			  throw new RuntimeInterruptedException();
+		  }
+
+		  final int last = (end - diff);
+		  for (int i = start; i <= last; i++) {
+			  doInsideChartCell(diff, i);
+		  }
+	  }
+  }
+
+  private void doInsideChartCell(final int diff, final int start) {
+//	  doInsideChartCell(diff, start, false);
+//  }
+//  
+//  private void doInsideChartCell(final int diff, final int start, final boolean syntheticOnly) {
     final boolean lengthNormalization = op.testOptions.lengthNormalization;
     if (spillGuts) {
       tick("Binaries for span " + diff + " start " + start + " ...");
     }
-    int end = start + diff;
+    final int end = start + diff;
 
     final List<ParserConstraint> constraints = getConstraints();
     if (constraints != null) {
@@ -868,6 +875,8 @@ oScore[split][end][br.rightChild] = totR;
         }
       }
     }
+    final boolean syntheticOnly = independentConstraints != null && independentConstraints.violatesConstraints(start, end);
+//    System.err.println("Cell [" + start + "," + end + "]: " + (syntheticOnly));
 
     // 2011-11-26 jdk1.6: caching/hoisting a bunch of variables gives you about 15% speed up!
     // caching this saves a bit of time in the inner loop, maybe 1.8%
@@ -884,7 +893,13 @@ oScore[split][end][br.rightChild] = totR;
       if (narrowR >= end) {  // can this left constituent leave space for a right constituent?
         continue;
       }
-      BinaryRule[] leftRules = bg.splitRulesWithLC(leftState);
+      BinaryRule[] leftRules = null;
+      if (syntheticOnly) {
+    	  leftRules = bg.splitSyntheticRulesWithLC(leftState);
+      } else {
+    	  leftRules = bg.splitRulesWithLC(leftState);
+      }
+      totalRulesChecked += leftRules.length;
       //      if (spillGuts) System.out.println("Found " + leftRules.length + " left rules for state " + stateIndex.get(leftState));
       for (BinaryRule rule : leftRules) {
         int rightChild = rule.rightChild;
@@ -1012,7 +1027,14 @@ oScore[split][end][br.rightChild] = totR;
       if (narrowL <= start) {
         continue;
       }
-      BinaryRule[] rightRules = bg.splitRulesWithRC(rightState);
+      BinaryRule[] rightRules = null;
+      if (syntheticOnly) {
+    	  rightRules = bg.splitSyntheticRulesWithRC(rightState);
+      } else {
+    	  rightRules = bg.splitRulesWithRC(rightState);
+      }
+      totalRulesChecked += rightRules.length;
+//      rightRules = bg.splitRulesWithRC(rightState);
       //      if (spillGuts) System.out.println("Found " + rightRules.length + " right rules for state " + stateIndex.get(rightState));
       for (BinaryRule rule : rightRules) {
         //      if (spillGuts) System.out.println("Considering rule for " + start + " to " + end + ": " + rightRules[i]);

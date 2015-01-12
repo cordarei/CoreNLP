@@ -9,13 +9,13 @@ import edu.stanford.nlp.util.CollectionUtils;
 public class IndependentSpanConstraints {
 	final int[] constraints;
 	final int[] nextConstraints;
-	final int[] prevConstraints;
+//	final int[] prevConstraints;
 //	final boolean[] violations;
 	final int length;
 	
 	public IndependentSpanConstraints(Tree goldTree) {
-		length = goldTree.yield().size() + 1;
-		constraints = getConstraints(goldTree);
+		length = goldTree.getLeaves().size() + 1;
+		constraints = getConstraintsFromTree(goldTree);
 		nextConstraints = new int[length];
 		for (int i = 0, j = 0; i < length; i++) {
 			if (i == constraints[j]) {
@@ -23,14 +23,14 @@ public class IndependentSpanConstraints {
 			}
 			nextConstraints[i] = constraints[j];
 		}
-		prevConstraints = new int[length];
-		for (int i = 0, j = 0, prev=0; i < length; i++) {
-			if (i == constraints[j]) {
-				prev = constraints[j];
-				j += 1;
-			}
-			prevConstraints[i] = prev;
-		}
+//		prevConstraints = new int[length];
+//		for (int i = 0, j = 0, prev=0; i < length; i++) {
+//			if (i == constraints[j]) {
+//				prev = constraints[j];
+//				j += 1;
+//			}
+//			prevConstraints[i] = prev;
+//		}
 //		violations = new boolean[length*length];
 		
 //		int start = 0;
@@ -51,12 +51,13 @@ public class IndependentSpanConstraints {
 //			}
 //			start++;
 //		}
-//		System.err.println("Constraints: " + Arrays.toString(constraints));
-//		System.err.println("NextConstraints: " + Arrays.toString(nextConstraints));
+		System.err.println("Constraints: " + Arrays.toString(constraints));
+		System.err.println("NextConstraints: " + Arrays.toString(nextConstraints));
 //		System.err.println("PrevConstraints: " + Arrays.toString(prevConstraints));
 //		for (int i = 0; i < length; i++) {
 //			for (int j = i + 2; j <= length; j++) {
-//				System.err.println("Span: (" + i + "," + j + ") is violation?: " + violations[i*length + j]);
+////				System.err.println("Span: (" + i + "," + j + ") is violation?: " + violations[i*length + j]);
+//				System.err.println("Span: (" + i + "," + j + ") is violation?: " + violatesConstraints(i, j));
 //			}
 //		}
 	}
@@ -80,16 +81,19 @@ public class IndependentSpanConstraints {
 	public int getNextConstraint(final int start) {
 		return nextConstraints[start];
 	}
-	public int getPrevConstraint(final int start) {
-		return prevConstraints[start];
+//	public int getPrevConstraint(final int start) {
+//		return prevConstraints[start];
+//	}
+	public int[] getConstraints() {
+		return constraints;
 	}
 	
-	private int[] getConstraints(Tree goldTree) {
+	private int[] getConstraintsFromTree(Tree goldTree) {
 		Tree t = goldTree.skipRoot();
 		ArrayList<Integer> constraints = new ArrayList<Integer>();
 		int total = 0;
 		for (Tree child : t.children()) {
-			total += child.yield().size();
+			total += child.getLeaves().size();
 			constraints.add(total);
 		}
 		constraints.add(total + 1);
