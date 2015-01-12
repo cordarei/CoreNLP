@@ -310,7 +310,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
   }
 
 
-  static final boolean spillGuts = true;
+  static final boolean spillGuts = false;
   static final boolean dumpTagging = false;
   private long time = System.currentTimeMillis();
 
@@ -470,10 +470,12 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
     if (op.testOptions.verbose) {
       // insideTime += Timing.tick("done.");
       Timing.tick("done.");
-      System.out.println("PCFG parsing " + length + " words (incl. stop): insideScore = " + iScore[0][length][goal]);
+      System.err.println("PCFG parsing " + length + " words (incl. stop): insideScore = " + iScore[0][length][goal] + " for goal=" + goal + "[" + stateIndex.get(goal) + "]");
     }
     bestScore = iScore[0][length][goal];
+    if (op.testOptions.verbose) System.err.println("bestScore: " + bestScore);
     boolean succeeded = hasParse();
+    if (op.testOptions.verbose) System.err.println("succeeded: " + succeeded);
     if (op.testOptions.doRecovery && !succeeded && !floodTags) {
       floodTags = true; // sentence will try to reparse
       // ms: disabled message. this is annoying and it doesn't really provide much information
@@ -808,7 +810,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
 	  totalRulesChecked = 0;
 		  doInsideScoresRange(0, length - 1);
 		  doInsideChartCell(length, 0);
-		  System.err.println("Total rules checked: " + totalRulesChecked);
+		  if (op.testOptions.verbose) System.err.println("Total rules checked: " + totalRulesChecked);
 //	  } else {
 //		  //do inside constraints
 //		  int start = 0;
@@ -863,7 +865,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
 //  private void doInsideChartCell(final int diff, final int start, final boolean syntheticOnly) {
     final boolean lengthNormalization = op.testOptions.lengthNormalization;
     if (spillGuts) {
-      tick("Binaries for span " + diff + " start " + start + " ...");
+      tick("Binaries for span " + diff + " start " + start + " ...\n");
     }
     final int end = start + diff;
 
@@ -876,7 +878,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
       }
     }
     final boolean syntheticOnly = independentConstraints != null && independentConstraints.violatesConstraints(start, end);
-//    System.err.println("Cell [" + start + "," + end + "]: " + (syntheticOnly));
+    if (spillGuts) System.err.println("Cell [" + start + "," + end + "]: syntheticOnly=" + (syntheticOnly));
 
     // 2011-11-26 jdk1.6: caching/hoisting a bunch of variables gives you about 15% speed up!
     // caching this saves a bit of time in the inner loop, maybe 1.8%
@@ -899,7 +901,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
       } else {
     	  leftRules = bg.splitRulesWithLC(leftState);
       }
-      totalRulesChecked += leftRules.length;
+      if (op.testOptions.verbose) totalRulesChecked += leftRules.length;
       //      if (spillGuts) System.out.println("Found " + leftRules.length + " left rules for state " + stateIndex.get(leftState));
       for (BinaryRule rule : leftRules) {
         int rightChild = rule.rightChild;
@@ -1033,7 +1035,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
       } else {
     	  rightRules = bg.splitRulesWithRC(rightState);
       }
-      totalRulesChecked += rightRules.length;
+      if (op.testOptions.verbose) totalRulesChecked += rightRules.length;
 //      rightRules = bg.splitRulesWithRC(rightState);
       //      if (spillGuts) System.out.println("Found " + rightRules.length + " right rules for state " + stateIndex.get(rightState));
       for (BinaryRule rule : rightRules) {
@@ -1108,6 +1110,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
               continue;
             }
             float tot = pS + lS + rS;
+            if (spillGuts) { System.err.println("Rule " + rule + " over [" + start + "," + end + ") has log score " + tot + " from L[" + stateIndex.get(leftChild) + "=" + leftChild + "] = "+ lS  + " R[" + stateIndex.get(rightState) + "=" + rightState + "] =  " + rS); }
             if (tot > bestIScore) {
               bestIScore = tot;
             }
@@ -1160,7 +1163,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
       } // for rightRules
     } // for rightState
     if (spillGuts) {
-      tick("Unaries for span " + diff + "...");
+      tick("Unaries for span " + diff + "...\n");
     }
 
     // do unary rules -- one could promote this loop and put start inside

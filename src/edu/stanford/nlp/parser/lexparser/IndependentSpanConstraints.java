@@ -51,8 +51,8 @@ public class IndependentSpanConstraints {
 //			}
 //			start++;
 //		}
-		System.err.println("Constraints: " + Arrays.toString(constraints));
-		System.err.println("NextConstraints: " + Arrays.toString(nextConstraints));
+//		System.err.println("Constraints: " + Arrays.toString(constraints));
+//		System.err.println("NextConstraints: " + Arrays.toString(nextConstraints));
 //		System.err.println("PrevConstraints: " + Arrays.toString(prevConstraints));
 //		for (int i = 0; i < length; i++) {
 //			for (int j = i + 2; j <= length; j++) {

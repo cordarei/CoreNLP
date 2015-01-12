@@ -274,14 +274,15 @@ public class LexicalizedParserQuery implements ParserQuery {
     }
 
     if (op.doPCFG) {
-      if (!pparser.parse(sentenceB) && pparser.getIndependentConstraints() == null) {
-        return parseSucceeded;
-      } else if (pparser.getIndependentConstraints() != null) {
-    	  System.err.println("Parse failed with constraints. Re-parsing.");
-    	  pparser.setIndependentConstraints(null);
-    	  if (!pparser.parse(sentenceB)) {
-    		  return parseSucceeded;
-    	  }
+      if (!pparser.parse(sentenceB)) {
+    	if (pparser.getIndependentConstraints() != null) {
+    		pparser.setIndependentConstraints(null);
+    		if (!pparser.parse(sentenceB)) {
+    			return false;
+    		}
+    	} else {
+    		return false;
+    	}
       }
       if (op.testOptions.verbose) {
         pwOut.println("PParser output");
