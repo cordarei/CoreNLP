@@ -9,8 +9,6 @@ import edu.stanford.nlp.util.CollectionUtils;
 public class IndependentSpanConstraints {
 	final int[] constraints;
 	final int[] nextConstraints;
-//	final int[] prevConstraints;
-//	final boolean[] violations;
 	final int length;
 	
 	public IndependentSpanConstraints(Tree goldTree) {
@@ -23,43 +21,6 @@ public class IndependentSpanConstraints {
 			}
 			nextConstraints[i] = constraints[j];
 		}
-//		prevConstraints = new int[length];
-//		for (int i = 0, j = 0, prev=0; i < length; i++) {
-//			if (i == constraints[j]) {
-//				prev = constraints[j];
-//				j += 1;
-//			}
-//			prevConstraints[i] = prev;
-//		}
-//		violations = new boolean[length*length];
-		
-//		int start = 0;
-//		for (int i : constraints) {
-//			while (start < i) {
-//				for (int end = start + 1; end <= i; end++) {
-//					violations[start*length + end] = false;
-//				}
-//				for (int end = i + 1; end <= length; end++) {
-//					violations[start*length + end] = true;
-//				}
-//				start++;
-//			}
-//		}
-//		while (start < length) {
-//			for (int end = start + 2; end <=length; end++) {
-//				violations[start*length + end] = false;
-//			}
-//			start++;
-//		}
-//		System.err.println("Constraints: " + Arrays.toString(constraints));
-//		System.err.println("NextConstraints: " + Arrays.toString(nextConstraints));
-//		System.err.println("PrevConstraints: " + Arrays.toString(prevConstraints));
-//		for (int i = 0; i < length; i++) {
-//			for (int j = i + 2; j <= length; j++) {
-////				System.err.println("Span: (" + i + "," + j + ") is violation?: " + violations[i*length + j]);
-//				System.err.println("Span: (" + i + "," + j + ") is violation?: " + violatesConstraints(i, j));
-//			}
-//		}
 	}
 	
 	public boolean violatesConstraints(final int start, final int end) {
@@ -69,21 +30,14 @@ public class IndependentSpanConstraints {
 		if (start + 1 == end) {//length-one spans never violate
 			return false;
 		}
-//		for(int i : constraints) {
-//			if (i > start && i < end) {
-////				System.err.println("Edge from " + start + " to " + end + " with state " + stateIndex.get(edge.state) + " violates constraint " + i);
-//				return true;
-//			}
-//		}
+
 		return end > nextConstraints[start];
-//		return violations[start*length + end];
 	}
+
 	public int getNextConstraint(final int start) {
 		return nextConstraints[start];
 	}
-//	public int getPrevConstraint(final int start) {
-//		return prevConstraints[start];
-//	}
+
 	public int[] getConstraints() {
 		return constraints;
 	}
@@ -103,7 +57,6 @@ public class IndependentSpanConstraints {
 	
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
 		return Arrays.toString(constraints);
 	}
 }
