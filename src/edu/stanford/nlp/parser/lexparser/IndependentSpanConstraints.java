@@ -79,9 +79,9 @@ public class IndependentSpanConstraints {
 		try (BufferedReader reader = Files.newBufferedReader(Paths.get(filename) , StandardCharsets.UTF_8)) {
 			String line = null;
 			while ((line = reader.readLine()) != null ) {
+				constraints.add(new ArrayList<Integer>());
 				if (line.trim().length() > 0) {
 					String[] fields = line.trim().split(" ");
-					constraints.add(new ArrayList<Integer>());
 					for (String s : fields) {
 //						System.err.println(s);
 						constraints.get(constraints.size() - 1).add(Integer.decode(s));
