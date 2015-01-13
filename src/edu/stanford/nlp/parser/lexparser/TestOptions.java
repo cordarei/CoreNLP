@@ -188,6 +188,12 @@ public class TestOptions implements Serializable {
   public String outputFilesPrefix = "parses";
 
   /**
+   * If the writeOutputFiles option is true, then output files appear with
+   * this prefix.
+   */
+  public String independentConstraintsFile = null;
+  
+  /**
    * If this option is not null, output the k-best equivocation. Must be specified
    * with printPCFGkBest.
    */

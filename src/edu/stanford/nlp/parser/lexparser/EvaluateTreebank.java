@@ -639,12 +639,26 @@ public class EvaluateTreebank {
       }
     } else {
       ParserQuery pq = pqFactory.parserQuery();
+      
+      ArrayList<ArrayList<Integer>> constraintList = null;
+      int sentNum = 0;
+      if (op.testOptions.independentConstraintsFile != null) {
+    	  System.err.println("Loading constraints from file");
+    	  constraintList = IndependentSpanConstraints.getConstraintsFromFile(op.testOptions.independentConstraintsFile);
+      }
 
       for (Tree goldTree : testTreebank) {
         final List<CoreLabel> sentence = getInputSentence(goldTree);
+        
         IndependentSpanConstraints constraints = null;
         if (op.testOptions.independentConstraintsMinSentenceLength <= sentence.size()) {
-          constraints = new IndependentSpanConstraints(goldTree);
+        	if (constraintList == null) {
+        		constraints = new IndependentSpanConstraints(sentence.size() + 1, goldTree);
+        	} else {
+        		constraintList.get(sentNum).add(sentence.size() + 1);
+        		int[] arr = CollectionUtils.asIntArray(constraintList.get(sentNum));
+        		constraints = new IndependentSpanConstraints(sentence.size() + 1, arr );
+        	}
         }
 
         pwErr.println("Parsing [len. " + sentence.size() + "]: " + Sentence.listToString(sentence) +
@@ -656,6 +670,7 @@ public class EvaluateTreebank {
         pwErr.println("Parsed " + sentence.size() + " words in " + parseTimer.toSecondsString() + " seconds.");
 
         processResults(pq, goldTree, pwErr, pwOut, pwFileOut, pwStats, treePrint);
+        sentNum++;
       } // for tree iterator
     }
 

@@ -432,7 +432,10 @@ public class Options implements Serializable {
     } else if (args[i].equalsIgnoreCase("-outputFilesPrefix") && i+1 < args.length) {
       testOptions.outputFilesPrefix = args[i+1];
       i += 2;
-    } else if (args[i].equalsIgnoreCase("-outputkBestEquivocation") && i+1 < args.length) {
+    } else if (args[i].equalsIgnoreCase("-independentConstraintsFile") && i+1 < args.length) {
+        testOptions.independentConstraintsFile = args[i+1];
+        i += 2;
+    }  else if (args[i].equalsIgnoreCase("-outputkBestEquivocation") && i+1 < args.length) {
       testOptions.outputkBestEquivocation = args[i+1];
       i += 2;
     } else if (args[i].equalsIgnoreCase("-writeOutputFiles")) {
