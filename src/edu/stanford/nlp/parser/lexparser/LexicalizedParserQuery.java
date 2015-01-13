@@ -276,6 +276,7 @@ public class LexicalizedParserQuery implements ParserQuery {
     if (op.doPCFG) {
       if (!pparser.parse(sentenceB)) {
     	if (pparser.getIndependentConstraints() != null) {
+    		System.err.println("Parse failed with constraints. Re-parsing.");
     		pparser.setIndependentConstraints(null);
     		if (!pparser.parse(sentenceB)) {
     			return false;
