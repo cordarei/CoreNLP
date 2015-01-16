@@ -120,6 +120,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
   protected List<ParserConstraint> constraints = null;
   protected IndependentSpanConstraints independentConstraints = null;
   int totalRulesChecked = 0;
+  int totalTraversals = 0;
 
   private CoreLabel getCoreLabel(int labelIndex) {
     if (originalCoreLabels[labelIndex] != null) {
@@ -808,9 +809,11 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
 //    }
 //	  if (independentConstraints == null) {
 	  totalRulesChecked = 0;
+	  totalTraversals = 0;
 		  doInsideScoresRange(0, length - 1);
 		  doInsideChartCell(length, 0);
-		  if (op.testOptions.verbose) System.err.println("Total rules checked: " + totalRulesChecked);
+		  System.err.println("Total rules checked: " + totalRulesChecked);
+		  System.err.println("Total traversals evaluated: " + totalTraversals);
 //	  } else {
 //		  //do inside constraints
 //		  int start = 0;
@@ -901,7 +904,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
       } else {
     	  leftRules = bg.splitRulesWithLC(leftState);
       }
-      if (op.testOptions.verbose) totalRulesChecked += leftRules.length;
+      totalRulesChecked += leftRules.length;
       //      if (spillGuts) System.out.println("Found " + leftRules.length + " left rules for state " + stateIndex.get(leftState));
       for (BinaryRule rule : leftRules) {
         int rightChild = rule.rightChild;
@@ -973,6 +976,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
             if (tot > bestIScore) {
               bestIScore = tot;
             }
+            totalTraversals++;
           } // for split point
           foundBetter = bestIScore > oldIScore;
         } else {
@@ -1035,7 +1039,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
       } else {
     	  rightRules = bg.splitRulesWithRC(rightState);
       }
-      if (op.testOptions.verbose) totalRulesChecked += rightRules.length;
+      totalRulesChecked += rightRules.length;
 //      rightRules = bg.splitRulesWithRC(rightState);
       //      if (spillGuts) System.out.println("Found " + rightRules.length + " right rules for state " + stateIndex.get(rightState));
       for (BinaryRule rule : rightRules) {
@@ -1114,6 +1118,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
             if (tot > bestIScore) {
               bestIScore = tot;
             }
+            totalTraversals++;
           } // end for split
           foundBetter = bestIScore > oldIScore;
         } else {
