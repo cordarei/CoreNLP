@@ -342,6 +342,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
       floodTags = false;
     }
     if (op.testOptions.verbose) {
+//    	new Throwable("").printStackTrace(System.err);
       Timing.tick("Starting pcfg parse.");
     }
     if (spillGuts) {
@@ -464,7 +465,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
     // buildOFilter();
     if (op.testOptions.verbose) {
       Timing.tick("done.");
-      System.err.print("Starting insides...");
+      System.err.println("Starting insides...");
     }
     // do the inside probabilities
     doInsideScores();
@@ -478,10 +479,10 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
     boolean succeeded = hasParse();
     if (op.testOptions.verbose) System.err.println("succeeded: " + succeeded);
     if (op.testOptions.doRecovery && !succeeded && !floodTags) {
-      floodTags = true; // sentence will try to reparse
+//      floodTags = true; // sentence will try to reparse
       // ms: disabled message. this is annoying and it doesn't really provide much information
       //System.err.println("Trying recovery parse...");
-      return parse(sentence);
+//      return parse(sentence);
     }
     if ( ! op.doDep || op.testOptions.useFastFactored) {
       return succeeded;
@@ -795,55 +796,38 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
    *  of length 2 or more.
    */
   void doInsideScores() {
-//    for (int diff = 2; diff <= length; diff++) {
-//      if (Thread.interrupted()) {
-//        throw new RuntimeInterruptedException();
-//      }
-//
-//      // usually stop one short because boundary symbol only combines
-//      // with whole sentence span. So for 3 word sentence + boundary = 4,
-//      // length == 4, and do [0,2], [1,3]; [0,3]; [0,4]
-//      for (int start = 0; start < ((diff == length) ? 1: length - diff); start++) {
-//        doInsideChartCell(diff, start);
-//      }
-//    }
-//	  if (independentConstraints == null) {
 	  totalRulesChecked = 0;
 	  totalTraversals = 0;
-		  doInsideScoresRange(0, length - 1);
-		  doInsideChartCell(length, 0);
-		  System.err.println("Total rules checked: " + totalRulesChecked);
-		  System.err.println("Total traversals evaluated: " + totalTraversals);
-//	  } else {
-//		  //do inside constraints
-//		  int start = 0;
-//		  while (start < length - 1) {
-//			  int end = independentConstraints.getNextConstraint(start);
-//			  doInsideScoresRange(start, end);
-//			  start = end;
-//		  }
-//		  //do around constraints (synthetic only)
-//		  for (int diff = 2; diff < length; diff++) {
-//			  start = 0;
-//			  while (start < length - 1) {
-//				  int end = independentConstraints.getNextConstraint(start);
-//				  
-//				  int first = Math.max(start, end - diff + 1);
-//				  int last = Math.min(end - 1, length - diff - 1);
-//
-//				  for (int i = first; i <= last; i++){
-//					  doInsideChartCell(diff, i, true);
-//				  }
-//				  
-//				  if (last < end - 1)
-//					  break;
-//
-//				  start = end;
-//			  }
-//		  }
-//		  //do last cell
+	  
+	  doInsideScoresRange(0, length - 1);
+	  doInsideChartCell(length, 0);
+	  
+	  if (!hasParse()) {
+		  System.err.println("Parse failed with constraints, re-doing cells that violated constraints.");
+		  System.err.println("Current rules checked: " + totalRulesChecked);
+		  System.err.println("Current traversals evaluated: " + totalTraversals);
+		  //redo cells that were synthetic-only
+		  for (int diff = 2; diff <= length - 1; diff++) {
+			  final int last = (length - diff - 1);
+			  for (int i = 0; i <= last; i++) {
+				  if (independentConstraints.violatesConstraints(i, i + diff)) {
+//					  System.err.println("Re-doing cell diff:"+diff+" i:"+i);
+					  doInsideChartCell(diff, i, false);
+				  }
+			  }
+		  }
+		  doInsideChartCell(length-1, 0, false); // does not violate constraints, so won't be called in loop above
+		  doInsideChartCell(length, 0, false);
+		  
+//		  IndependentSpanConstraints tmp = independentConstraints;
+//		  independentConstraints = null;
+//		  doInsideScoresRange(0, length - 1);
 //		  doInsideChartCell(length, 0);
-//	  }
+//		  independentConstraints = tmp;
+	  }
+	  
+	  System.err.println("Total rules checked: " + totalRulesChecked);
+	  System.err.println("Total traversals evaluated: " + totalTraversals);
   }
   
   //do CKY in range [start,end)
@@ -862,10 +846,9 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
   }
 
   private void doInsideChartCell(final int diff, final int start) {
-//	  doInsideChartCell(diff, start, false);
-//  }
-//  
-//  private void doInsideChartCell(final int diff, final int start, final boolean syntheticOnly) {
+	  doInsideChartCell(diff, start, true);
+  }
+  private void doInsideChartCell(final int diff, final int start, final boolean checkConstraints) {
     final boolean lengthNormalization = op.testOptions.lengthNormalization;
     if (spillGuts) {
       tick("Binaries for span " + diff + " start " + start + " ...\n");
@@ -880,8 +863,9 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
         }
       }
     }
-    final boolean syntheticOnly = independentConstraints != null && independentConstraints.violatesConstraints(start, end);
-    if (spillGuts) System.err.println("Cell [" + start + "," + end + "]: syntheticOnly=" + (syntheticOnly));
+    final boolean syntheticOnly = checkConstraints && independentConstraints != null && independentConstraints.violatesConstraints(start, end);
+    if (spillGuts) 
+    	System.err.println("Cell [" + start + "," + end + "]: syntheticOnly=" + (syntheticOnly));
 
     // 2011-11-26 jdk1.6: caching/hoisting a bunch of variables gives you about 15% speed up!
     // caching this saves a bit of time in the inner loop, maybe 1.8%

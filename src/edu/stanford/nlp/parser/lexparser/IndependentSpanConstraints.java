@@ -17,15 +17,6 @@ public class IndependentSpanConstraints {
 	final int length;
 	
 	public IndependentSpanConstraints(final int length, Tree goldTree) {
-//		length = goldTree.getLeaves().size() + 1;
-//		constraints = getConstraintsFromTree(goldTree);
-//		nextConstraints = new int[length];
-//		for (int i = 0, j = 0; i < length; i++) {
-//			if (i == constraints[j]) {
-//				j += 1;
-//			}
-//			nextConstraints[i] = constraints[j];
-//		}
 		this(length, getConstraintsFromTree(goldTree));
 	}
 	

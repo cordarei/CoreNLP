@@ -124,7 +124,7 @@ public class TestOptions implements Serializable {
   /**
    * Print a lot of extra output as you parse.
    */
-  public boolean verbose = false; // Don't change this; set with -v
+  public boolean verbose = true; // Don't change this; set with -v
 
   public final boolean exhaustiveTest = false;
 
