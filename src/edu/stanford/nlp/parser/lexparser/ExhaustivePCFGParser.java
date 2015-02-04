@@ -917,7 +917,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
         if ( ! lengthNormalization) {
           // find the split that can use this rule to make the max score
           for (int split = min; split <= max; split++) {
-
+        	totalTraversals++;
             if (constraints != null) {
               boolean skip = false;
               for (ParserConstraint c : constraints) {
@@ -960,7 +960,6 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
             if (tot > bestIScore) {
               bestIScore = tot;
             }
-            totalTraversals++;
           } // for split point
           foundBetter = bestIScore > oldIScore;
         } else {
@@ -1055,7 +1054,7 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
         if ( ! lengthNormalization) {
           // find the split that can use this rule to make the max score
           for (int split = min; split <= max; split++) {
-
+        	totalTraversals++;
             if (constraints != null) {
               boolean skip = false;
               for (ParserConstraint c : constraints) {
@@ -1102,7 +1101,6 @@ public class ExhaustivePCFGParser implements Scorer, KBestViterbiParser {
             if (tot > bestIScore) {
               bestIScore = tot;
             }
-            totalTraversals++;
           } // end for split
           foundBetter = bestIScore > oldIScore;
         } else {
