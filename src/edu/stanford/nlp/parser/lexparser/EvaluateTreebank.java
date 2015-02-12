@@ -644,7 +644,9 @@ public class EvaluateTreebank {
       int sentNum = 0;
       if (op.testOptions.independentConstraintsFile != null) {
     	  System.err.println("Loading constraints from file");
+    	  Timing loadConstraintsTimer = new Timing();
     	  constraintList = IndependentSpanConstraints.getConstraintsFromFile(op.testOptions.independentConstraintsFile);
+    	  loadConstraintsTimer.done("Loading constraints from file");
       }
 
       for (Tree goldTree : testTreebank) {
